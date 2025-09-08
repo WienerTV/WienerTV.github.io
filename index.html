@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>スキップ可能な動画広告（時間計測付き）</title>
+    <style>
+        /* 動画コンテナのスタイル */
+        .video-container {
+            position: relative;
+            width: 80%;
+            max-width: 800px;
+            margin: 20px auto;
+            border: 1px solid #ccc;
+        }
+
+        .video-container video {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        
+        /* 広告表示エリアのスタイル */
+        .ad-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+        }
+
+        /* スキップボタンのスタイル */
+        #skip-button {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            padding: 10px 15px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: 1px solid white;
+            border-radius: 5px;
+            cursor: pointer;
+            display: none;
+            font-family: sans-serif;
+            font-size: 14px;
+        }
+
+        #skip-button:hover {
+            background-color: rgba(0, 0, 0, 0.9);
+        }
+
+        /* ### 追加 ### 時間表示エリアのスタイル */
+        #time-display {
+            text-align: center;
+            margin-top: 10px;
+            font-family: sans-serif;
+            font-size: 16px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="video-container">
+        <video id="main-video" src="main.mp4" controls></video>
+
+        <div class="ad-overlay" id="ad-overlay">
+            <video id="ad-video" src="ad.mp4" autoplay muted playsinline></video>
+            
+            <div id="skip-button">広告をスキップ</div>
+        </div>
+    </div>
+
+    <p id="time-display"></p>
+
+    <script>
+        // 各要素を取得
+        const mainVideo = document.getElementById('main-video');
+        const adOverlay = document.getElementById('ad-overlay');
+        const adVideo = document.getElementById('ad-video');
+        const skipButton = document.getElementById('skip-button');
+        const timeDisplay = document.getElementById('time-display'); // ### 追加 ###
+
+        // スキップ可能になるまでの秒数
+        const skippableTime = 5000; // 5秒
+        
+        // ### 追加 ### 広告再生開始時刻を保存する変数
+        let adStartTime;
+
+        // ページが読み込まれた時点では本編を一時停止しておく
+        mainVideo.pause();
+
+        // 広告を再生する関数
+        function playAd() {
+            adOverlay.style.display = 'block';
+            adVideo.play().catch(error => {
+                console.log("広告の自動再生がブロックされました。");
+            });
+        }
+
+        // 広告を終了し、本編を再生する関数
+        function playMainVideo() {
+            adOverlay.style.display = 'none';
+            adVideo.pause();
+            mainVideo.play();
+        }
+
+        // ### 追加 ### 広告の再生が実際に始まったら時刻を記録
+        adVideo.addEventListener('playing', () => {
+            adStartTime = Date.now(); // 現在の時刻（ミリ秒）を取得
+        });
+
+        // 5秒後にスキップボタンを表示
+        setTimeout(() => {
+            skipButton.style.display = 'block';
+        }, skippableTime);
+
+        // ### 変更 ### スキップボタンがクリックされた時の処理
+        skipButton.addEventListener('click', () => {
+            // 時間計測と表示
+            if (adStartTime) {
+                const skipTime = Date.now();
+                const elapsedTime = (skipTime - adStartTime) / 1000; // ミリ秒を秒に変換
+                // toFixed(2)で小数点以下2桁にフォーマット
+                timeDisplay.textContent = `広告がスキップされるまでの時間: ${elapsedTime.toFixed(2)}秒`;
+            }
+            
+            // 本編の再生
+            playMainVideo();
+        });
+
+        // 広告動画が最後まで再生された時の処理
+        adVideo.addEventListener('ended', () => {
+            playMainVideo();
+        });
+
+        // ページ読み込み時に広告を開始
+        playAd();
+
+    </script>
+
+</body>
+</html>
