@@ -7,7 +7,7 @@
     <style>
         /* 動画コンテナのスタイル */
         .video-container {
-            position: relative;
+            position: relative; /* 基準点として重要 */
             width: 80%;
             max-width: 800px;
             margin: 20px auto;
@@ -19,8 +19,7 @@
             height: auto;
             display: block;
         }
-        
-        /* 広告表示エリアのスタイル */
+    
         .ad-overlay {
             position: absolute;
             top: 0;
@@ -30,33 +29,39 @@
             background-color: #000;
         }
 
-        /* スキップボタンのスタイル */
+        /* ### 変更箇所 ### スキップボタンのスタイル */
         #skip-button {
             position: absolute;
-            bottom: 20px;
-            right: 20px;
-            padding: 10px 15px;
+            /* 位置を%で指定 */
+            bottom: 5%; /* 下から5%の位置 */
+            right: 5%;  /* 右から5%の位置 */
+
+            /* 大きさをコンテナの幅に対する%で指定 */
+            width: 20%;      /* コンテナの幅の20% */
+            max-width: 120px; /* あまりに大きくなりすぎないように上限を設定 */
+            padding: 2% 0; /* 上下のパディングをコンテナの幅の2%に、左右は0 */
+        
+            /* フォントサイズをvw単位で指定 */
+            font-size: 2vw; /* ビューポート幅の2% */
+
             background-color: rgba(0, 0, 0, 0.7);
             color: white;
             border: 1px solid white;
-            border-radius: 5px;
+            border-radius: 5px; /* 角丸は固定値でも良い */
             cursor: pointer;
             display: none;
             font-family: sans-serif;
-            font-size: 14px;
+            text-align: center; /* 文字を中央揃えにする */
         }
 
         #skip-button:hover {
             background-color: rgba(0, 0, 0, 0.9);
         }
-
-        /* ### 追加 ### 時間表示エリアのスタイル */
+    
         #time-display {
             text-align: center;
             margin-top: 10px;
             font-family: sans-serif;
-            font-size: 16px;
-            color: #333;
         }
     </style>
 </head>
@@ -143,3 +148,4 @@
 </body>
 
 </html>
+
