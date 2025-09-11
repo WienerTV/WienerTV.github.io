@@ -91,3 +91,109 @@
             color: #555;
             height: 40px;
             line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>アンケート用動画</h1>
+
+    <div class="video-container">
+        <video id="main-video" src="main.mp4" playsinline></video>
+
+        <div class="ad-overlay" id="ad-overlay">
+            <video id="ad-video" src="ad.mp4" playsinline></video>
+            
+            <div id="play-button"></div>
+            <div id="skip-button">スキップ</div>
+        </div>
+    </div>
+
+    <p id="time-display"></p>
+
+    <script>
+        // --- 1. 要素の取得 ---
+        const mainVideo = document.getElementById('main-video');
+        const adOverlay = document.getElementById('ad-overlay');
+        const adVideo = document.getElementById('ad-video');
+        const playButton = document.getElementById('play-button');
+        const skipButton = document.getElementById('skip-button');
+        const timeDisplay = document.getElementById('time-display');
+
+        // --- 2. 設定値 ---
+        const skippableTime = 5000;
+        let adStartTime;
+
+        // --- 3. 初期化 ---
+        mainVideo.pause();
+
+        // --- 4. イベントリスナーの設定 ---
+
+        // (A) 再生ボタンがクリックされたら広告を再生
+        playButton.addEventListener('click', () => {
+            // 先に再生ボタンを非表示にする
+            playButton.style.display = 'none';
+
+            // adVideoの再生を試みる
+            const playPromise = adVideo.play();
+
+            if (playPromise !== undefined) {
+                playPromise.then(_ => {
+                    // 音声付きでの再生に成功した場合
+                    console.log("広告の音声付き再生に成功しました。");
+                }).catch(error => {
+                    // 音声付きでの再生に失敗した場合 (Safariではここに来ることが多い)
+                    console.error("広告の再生に失敗しました:", error);
+                    
+                    // ミュートして再度再生を試みる（これはほぼ成功する）
+                    adVideo.muted = true;
+                    adVideo.play();
+                    
+                    // ユーザーにミュート再生であることを知らせる（任意）
+                    timeDisplay.textContent = '動画はミュートで再生されます。';
+                });
+            }
+        });
+
+        // (B) 広告の再生が"実際に"始まったら
+        adVideo.addEventListener('playing', () => {
+            adStartTime = Date.now();
+            
+            // 5秒後にスキップボタンを表示
+            setTimeout(() => {
+                skipButton.style.display = 'block';
+            }, skippableTime);
+        });
+
+        // (C) スキップボタンがクリックされたら
+        skipButton.addEventListener('click', () => {
+            if (adStartTime) {
+                const skipTime = Date.now();
+                const elapsedTime = (skipTime - adStartTime) / 1000;
+                timeDisplay.innerHTML = `広告は ${elapsedTime.toFixed(2)}秒でスキップされました。<br>アンケート画面に戻ってください。`;
+            }
+            playMainVideo();
+        });
+        
+        // (D) 広告が最後まで再生されたら
+        adVideo.addEventListener('ended', () => {
+            timeDisplay.textContent = '広告が最後まで再生されました。';
+            playMainVideo();
+        });
+
+        // --- 5. ヘルパー関数 ---
+
+        function playMainVideo() {
+            adOverlay.style.display = 'none';
+            adVideo.pause();
+            adVideo.currentTime = 0;
+
+            // mainVideoを再生する前に、ミュートを解除し、controlsを追加する
+            mainVideo.muted = false;
+            mainVideo.controls = true; // ここでcontrolsを有効にする
+            mainVideo.play();
+        }
+    </script>
+
+</body>
+</html>
